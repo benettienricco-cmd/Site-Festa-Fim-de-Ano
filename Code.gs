@@ -11,7 +11,7 @@ function doGet() {
   return ContentService.createTextOutput('The Last Dance RSVP: ok');
 }
 
-var EMPRESAS = ['BFerraz', 'Eixo', 'Spons', 'Just Solutions'];
+var EMPRESAS = ['Biosphera', 'BFerraz', 'Eixo', 'Spons', 'Just Solutions'];
 var CABECALHO = ['Atualizado em', 'ID', 'Nome', 'Empresa', 'Cargo', 'Presença'];
 
 function limpar_(v) {
