@@ -255,16 +255,20 @@ form, .done { display: flex; flex-direction: column; gap: 16px; }
 .seg .thumb { display: none; }
 .seg label { height: 58px; padding: 0 12px; gap: 10px; border-radius: 16px; background: var(--on-glass); border: 1px solid rgba(255,255,255,0.35); box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); color: var(--ink); font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
 .seg label::before { content: ""; flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink3); background: center / 12px no-repeat; transition: background-color .18s, border-color .18s; }
-.seg #p-sim:checked + label { background: var(--ink); color: var(--orange); border-color: var(--ink); box-shadow: 0 10px 22px rgba(0,0,0,0.28); }
-.seg #p-sim:checked + label::before { border-color: var(--orange); background-color: var(--orange); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23151515' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E"); }
-.seg #p-nao:checked + label { background: var(--cream); color: var(--ink); border-color: var(--ink); box-shadow: 0 8px 18px rgba(0,0,0,0.18); }
-.seg #p-nao:checked + label::before { border-color: var(--ink); background-color: var(--ink); background-size: 10px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EDECE1' stroke-width='3.6' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E"); }
+/* yes = green accent, no = red accent */
+.seg label[for=p-sim]::before { border-color: #0E8A4A; }
+.seg label[for=p-nao]::before { border-color: #C2152B; }
+.seg #p-sim:checked + label { background: var(--ink); color: #2BD67B; border-color: #2BD67B; box-shadow: 0 10px 22px rgba(0,0,0,0.28), inset 0 0 0 1px #2BD67B; }
+.seg #p-sim:checked + label::before { border-color: #2BD67B; background-color: #2BD67B; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23151515' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E"); }
+.seg #p-nao:checked + label { background: var(--cream); color: #C2152B; border-color: #C2152B; box-shadow: 0 8px 18px rgba(0,0,0,0.18), inset 0 0 0 1px #C2152B; }
+.seg #p-nao:checked + label::before { border-color: #C2152B; background-color: #C2152B; background-size: 10px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='3.6' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E"); }
 .seg.invalid { border: 0; background: none; }
 .seg.invalid label { border: 1.5px solid var(--ink); box-shadow: none; }
 @media (hover: hover) and (pointer: fine) {
   .seg:hover { border-color: transparent; }
   .seg input:not(:checked) + label:hover { background: rgba(255,255,255,0.38); border-color: rgba(21,21,21,0.45); border-radius: 16px; }
-  .seg input:not(:checked) + label:hover::before { border-color: var(--ink); }
+  .seg #p-sim:not(:checked) + label:hover::before { border-color: #0E8A4A; background-color: rgba(43,214,123,0.35); }
+  .seg #p-nao:not(:checked) + label:hover::before { border-color: #C2152B; background-color: rgba(194,21,43,0.22); }
 }
 @media (max-width: 379px) {
   .seg label { font-size: 14px; gap: 8px; padding: 0 8px; }
