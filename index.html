@@ -92,8 +92,25 @@ body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 
   position: absolute; left: 0; top: 0; width: 420px; height: 660px; transform: scale(var(--s)); transform-origin: top left;
   padding: 16px 16px 0; color: var(--ink); font-family: var(--grotesk); display: flex; flex-direction: column;
 }
-.t-img { height: 403px; flex-shrink: 0; border-radius: 18px; overflow: hidden; background: #262626; }
-.t-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; display: block; }
+.t-img { position: relative; height: 403px; flex-shrink: 0; border-radius: 18px; overflow: hidden; background: #262626; isolation: isolate; }
+.t-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; display: block;
+  transform: translate3d(var(--mx, 0px), calc(var(--my, 0px) + var(--sy, 0px)), 0) scale(1.12);
+  transition: transform .6s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+/* glitch: a thin light slice sweeps the image + chromatic edge flicker */
+.t-img::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 10px; z-index: 2; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, rgba(0,229,255,0) 0%, rgba(0,229,255,.55) 12%, rgba(255,255,255,.7) 30%, rgba(255,120,40,.5) 62%, rgba(255,0,110,.55) 88%, rgba(255,0,110,0) 100%);
+  mix-blend-mode: screen; animation: ld-scan 7.5s linear infinite; }
+.t-img::after { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: inset 3px 0 0 rgba(0,229,255,.75), inset -3px 0 0 rgba(255,0,110,.7), inset 0 2px 0 rgba(255,255,255,.35);
+  animation: ld-edge 7.5s steps(1) infinite; }
+@keyframes ld-scan { 0%, 78% { opacity: 0; transform: translateY(-12px); } 79% { opacity: .95; transform: translateY(0); } 86% { opacity: .75; transform: translateY(300px); } 88% { opacity: .9; transform: translateY(318px) scaleY(.5); } 90%, 100% { opacity: 0; transform: translateY(410px); } }
+@keyframes ld-edge { 0%, 79% { opacity: 0; transform: none; } 80% { opacity: 1; transform: translateX(2px); } 81% { opacity: .4; transform: translateX(-3px); } 82% { opacity: 0; } 86% { opacity: .9; transform: translateX(-1px); } 87%, 100% { opacity: 0; transform: none; } }
+/* desktop hover: soft tilt + glare */
+.ticket { transition: transform .5s cubic-bezier(.2,.7,.2,1); transform-style: preserve-3d; }
+.ticket.tilting { transition: transform .12s ease-out; }
+.glare { position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0; transition: opacity .4s;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 20%), rgba(255,255,255,.22), rgba(255,255,255,0) 45%); }
+.ticket.tilting .glare { opacity: 1; }
 .t-meta { margin-top: 20px; height: 28px; display: flex; align-items: flex-end; justify-content: space-between; }
 .t-meta .l { display: flex; align-items: flex-end; gap: 12px; }
 .t-date { font-size: 38px; font-weight: 700; letter-spacing: -0.05em; line-height: 0.7; white-space: nowrap; margin-left: -2px; }
@@ -268,6 +285,7 @@ form, .done { display: flex; flex-direction: column; gap: 16px; }
         <div class="t-title"><div class="l"><span class="t-the">THE</span><span class="t-last">Last</span></div><span class="t-year">2026</span></div>
         <div class="t-dance">DANCE</div>
       </div>
+      <div class="glare" aria-hidden="true"></div>
       <div class="perf" aria-hidden="true"></div>
     </div>
 
@@ -361,6 +379,42 @@ var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJk6mLmnQFuqeD29B-XjO
   var lastW = 0;
   function fit() { var w = ticket.clientWidth; if (!w || w === lastW) return; lastW = w; ticket.style.setProperty('--s', Math.min(w / 420, 1.2).toFixed(4)); }
   fit(); window.addEventListener('resize', fit); window.addEventListener('orientationchange', function () { setTimeout(fit, 250); });
+
+  // motion: light scroll parallax (all), tilt + glare on desktop hover
+  (function () {
+    var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var img = ticket.querySelector('.t-img img'), box = ticket.querySelector('.t-img'), top = ticket.querySelector('.t-top');
+    if (calm || !img || !box) return;
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return; ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        var r = box.getBoundingClientRect(), vh = window.innerHeight || 1;
+        var p = (r.top + r.height / 2 - vh / 2) / vh;
+        p = Math.max(-1, Math.min(1, p));
+        img.style.setProperty('--sy', (p * -14).toFixed(2) + 'px');
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+    var fine = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!fine || !top) return;
+    top.addEventListener('pointermove', function (e) {
+      var r = top.getBoundingClientRect();
+      var nx = (e.clientX - r.left) / r.width * 2 - 1, ny = (e.clientY - r.top) / r.height * 2 - 1;
+      ticket.classList.add('tilting');
+      ticket.style.transform = 'perspective(1100px) rotateX(' + (-ny * 3).toFixed(2) + 'deg) rotateY(' + (nx * 4).toFixed(2) + 'deg)';
+      img.style.setProperty('--mx', (-nx * 10).toFixed(1) + 'px');
+      img.style.setProperty('--my', (-ny * 8).toFixed(1) + 'px');
+      top.style.setProperty('--gx', ((nx + 1) * 50).toFixed(1) + '%');
+      top.style.setProperty('--gy', ((ny + 1) * 50).toFixed(1) + '%');
+    });
+    top.addEventListener('pointerleave', function () {
+      ticket.classList.remove('tilting');
+      ticket.style.transform = '';
+      img.style.setProperty('--mx', '0px'); img.style.setProperty('--my', '0px');
+    });
+  })();
 
   var form = $('rsvp'), err = $('err'), send = $('send'), done = $('done'), notice = $('notice'), seg = $('seg');
   function syncSeg() {
